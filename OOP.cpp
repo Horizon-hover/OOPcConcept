@@ -1,6 +1,21 @@
 #include <iostream>
 #include <string>
-using namespace std;
+#include <memory> // For smart pointers
+#include <limits> // For std::numeric_limits
+#include <cstdio> // For getchar()
+
+// Using aliases for readability
+using std::cout;
+using std::endl;
+using std::string;
+using std::string_view;
+
+// Function to prompt the user to press a key to exit
+void promptExit() {
+    cout << "\nPress any key to exit..." << endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the input buffer
+    getchar(); // Wait for a key press
+}
 
 // Base class
 class Animal {
@@ -10,10 +25,13 @@ protected:
 
 public:
     // Constructor
-    Animal(string _name, int _age) : name(_name), age(_age) {}
+    Animal(string_view _name, int _age) : name(_name), age(_age) {}
+
+    // Virtual destructor for proper cleanup
+    virtual ~Animal() = default;
 
     // Virtual function for polymorphism
-    virtual void makeSound() {
+    virtual void makeSound() const {
         cout << "Animal sound" << endl;
     }
 
@@ -23,7 +41,7 @@ public:
     }
 
     // Setter for name
-    void setName(string _name) {
+    void setName(string_view _name) {
         name = _name;
     }
 
@@ -46,10 +64,11 @@ private:
 
 public:
     // Constructor using initializer list to call base class constructor
-    Dog(string _name, int _age, string _breed, string _color) : Animal(_name, _age), breed(_breed), color(_color) {}
+    Dog(string_view _name, int _age, string_view _breed, string_view _color)
+        : Animal(_name, _age), breed(_breed), color(_color) {}
 
     // Override makeSound function
-    void makeSound() override {
+    void makeSound() const override {
         cout << "Woof!" << endl;
     }
 
@@ -59,51 +78,54 @@ public:
     }
 
     // Setter for breed
-    void setBreed(string _breed) {
+    void setBreed(string_view _breed) {
         breed = _breed;
     }
 
-    // Getter for breed
+    // Getter for color
     string getColor() const {
         return color;
     }
 
-    // Setter for breed
-    void setColor(string _color) {
-        breed = _color;
+    // Setter for color
+    void setColor(string_view _color) {
+        color = _color;
     }
 };
 
 int main() {
     // Create an Animal object
     Animal animal("Generic Animal", 5);
-    
+
     // Using getters
     cout << "Animal name: " << animal.getName() << endl;
     cout << "Animal age: " << animal.getAge() << " years" << endl;
-    
+
     // Using setters
     animal.setName("Milo");
     animal.setAge(3);
-    
+
     // Output updated information
     cout << "Updated animal name: " << animal.getName() << endl;
     cout << "Updated animal age: " << animal.getAge() << " years" << endl;
-    
+
     // Create a Dog object
     Dog dog("Buddy", 2, "Labrador", "Black");
-    
+
     // Using getters from base class
     cout << "Dog name: " << dog.getName() << endl;
     cout << "Dog age: " << dog.getAge() << " years" << endl;
-    
+
     // Using additional getters from derived class
     cout << "Dog breed: " << dog.getBreed() << endl;
     cout << "Dog color: " << dog.getColor() << endl;
-    
+
     // Polymorphism example
-    Animal *animalPtr = &dog; // Pointer to base class pointing to derived class object
+    std::unique_ptr<Animal> animalPtr = std::make_unique<Dog>(dog); // Smart pointer to base class
     animalPtr->makeSound(); // Calls Dog's overridden makeSound function
-  
+
+    // Prompt the user to press a key to exit
+    promptExit();
+
     return 0;
 }
